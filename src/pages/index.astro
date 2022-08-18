@@ -1,0 +1,18 @@
+---
+import Layout from "../layouts/Layout.astro";
+import FirstComponent from "../components/FirstComponent.svelte";
+---
+
+<Layout title="Welcome to Astro.">
+	<main>
+		<FirstComponent client:load />
+	</main>
+</Layout>
+
+<style lang="scss">
+	main {
+		p {
+			color: red;
+		}
+	}
+</style>
