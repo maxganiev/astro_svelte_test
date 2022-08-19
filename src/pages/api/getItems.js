@@ -1,50 +1,65 @@
 import { promisedPool } from '../../dbConfig';
+import fetch from 'node-fetch';
 
 export async function get() {
-	//as long as you don't have access to my db, any api can be referred, like:
-	const user = await new Promise(async (res, rej) => {
-		const request = await fetch('https://randomuser.me/api');
-		const response = await request.json();
+	try {
+		const user = await new Promise(async (res, rej) => {
+			const request = await fetch('https://randomuser.me/api');
+			const response = await request.json();
 
-		if (response) res(response);
-		else rej(new Error('connection failed'));
-	});
+			if (response) res(response);
+			else rej(new Error('connection failed'));
+		});
 
-	return {
-		body: JSON.stringify(user),
-	};
+		// const request = await fetch('https://randomuser.me/api');
+		// const response = await request.json();
+		// console.log(response);
 
-	const categories = await new Promise(async (res, rej) => {
-		const [rows] = await promisedPool.query('SELECT * FROM oc_category WHERE parent_id = 458 AND status = 1 AND image != ""');
+		return new Response(JSON.stringify(user), {
+			status: 200,
+		});
 
-		if (rows) res(rows);
-		else rej(new Error('db error'));
-	});
+		const categories = await new Promise(async (res, rej) => {
+			const [rows] = await promisedPool.query('SELECT * FROM oc_category WHERE parent_id = 458 AND status = 1 AND image != ""');
 
-	//console.log(categories);
+			if (rows) res(rows);
+			else rej(new Error('db error'));
+		});
 
-	const ids = categories.map((item) => item.category_id);
+		//console.log(categories);
 
-	//console.log(ids);
+		const ids = categories.map((item) => item.category_id);
 
-	const catNames = await new Promise(async (res, rej) => {
-		const [rows] = await promisedPool.query(
-			`SELECT name, category_id FROM oc_category_description WHERE category_id in (${ids.join(',')})`
-		);
+		//console.log(ids);
 
-		if (rows) res(rows);
-		else rej(new Error('db error'));
-	});
+		const catNames = await new Promise(async (res, rej) => {
+			const [rows] = await promisedPool.query(
+				`SELECT name, category_id FROM oc_category_description WHERE category_id in (${ids.join(',')})`
+			);
 
-	const result = categories.map((item) => {
-		const catName = catNames.find((_item) => _item.category_id == item.category_id);
+			if (rows) res(rows);
+			else rej(new Error('db error'));
+		});
 
-		return { ...item, name: catName.name };
-	});
+		const result = categories.map((item) => {
+			const catName = catNames.find((_item) => _item.category_id == item.category_id);
 
-	//console.log(result);
+			return { ...item, name: catName.name };
+		});
 
-	return {
-		body: JSON.stringify(result),
-	};
+		//console.log(result);
+
+		if (!result) {
+			return new Response(null, {
+				status: 404,
+				statusText: 'Problem has occured',
+			});
+		}
+
+		return new Response(JSON.stringify(result), {
+			status: 200,
+		});
+	} catch (error) {
+		console.log(error);
+	}
 }

@@ -1,11 +1,16 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import FirstComponent from "../components/FirstComponent.svelte";
+
+const req = await fetch("/api/getItems");
+const res = await req.json();
+console.log(res);
+const fetchedData = res;
 ---
 
 <Layout title="Welcome to Astro.">
 	<main>
-		<FirstComponent client:load />
+		<FirstComponent client:load {fetchedData} />
 	</main>
 </Layout>
 

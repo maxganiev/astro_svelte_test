@@ -1,6 +1,6 @@
 <!--using regular script-->
 <script>
-	let fetchedData;
+	export let fetchedData;
 
 	async function getData() {
 		const req = await fetch('/api/getItems');
@@ -43,8 +43,8 @@
 </script>
 </script> -->
 
-<!-- <ul>
+<ul>
 	{#each fetchedData as item}
 		<li>{item.name}</li>
 	{/each}
-</ul> -->
+</ul>
